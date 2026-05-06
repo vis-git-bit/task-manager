@@ -1,7 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { LayoutDashboard, PlusCircle, UserCircle, LogOut, CheckCircle2,  Wand2 } from 'lucide-react';
 
-const Sidebar = ({ onMenuClick, view }) => {   // receive function to change view & current active view
+type Props = {
+  onMenuClick: (view: string) => void; //fn. recieves a string but returns nothing 
+  view: string;
+};
+
+const Sidebar = ({ onMenuClick, view } : Props) => {   // receive function to change view & current active view
   const navigate = useNavigate();
 
   const menuItems = [

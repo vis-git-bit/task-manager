@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Search, Bell, UserCircle } from 'lucide-react';
 
+type User = {
+  name?: string;
+  email?: string;
+};
+
 const Topbar = () => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const StoredUser = localStorage.getItem("user");

@@ -3,13 +3,25 @@ import { useEffect } from 'react';
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
+type Props = {
+  editIndex: number | null;
+  onDone: () => void;
+};
+
+type FormValues = {
+  task: string;
+  description: string;
+  date: string;
+  status: string;
+};
+
 // accepting prop from home page
-const AddTask = ({ editIndex, onDone }) => {   
+const AddTask = ({ editIndex, onDone } : Props) => {   
   // editIndex -> tells if editing or adding
   // onDone -> callback after submit (go back to dashboard)
 
   // Formik setup (handles form state + validation)
-  const formik = useFormik({
+  const formik = useFormik<FormValues>({
     initialValues: {
       task: "",
       description: "",
@@ -34,10 +46,10 @@ const AddTask = ({ editIndex, onDone }) => {
 
   // run when editIndex changes (user clicked edit)
   useEffect(() => {
-   const user = JSON.parse(localStorage.getItem("user"));
+   const user = JSON.parse(localStorage.getItem("user")|| "{}");
    const key = `tasks_${user.email}`;
 
-   const stored = JSON.parse(localStorage.getItem(key)) || [];
+   const stored = JSON.parse(localStorage.getItem(key)|| "[]");
     if (editIndex !== null) {  
       // check if we are editing (not adding)
       const t = stored[editIndex];   
@@ -53,17 +65,17 @@ const AddTask = ({ editIndex, onDone }) => {
   }, [editIndex]); // dependency -> runs when editIndex changes
 
   // function to handle add/update task
-  const handleSubmit = (values) => {
+  const handleSubmit = (values : FormValues ): void => {
     const newTask = {
       TaskName: values.task,
       Description: values.description,
       Status: values.status,
       DueDate: values.date,
     };
-const user = JSON.parse(localStorage.getItem("user"));
+const user = JSON.parse(localStorage.getItem("user")|| "{}");
 const key = `tasks_${user.email}`;
 
-const stored = JSON.parse(localStorage.getItem(key)) || [];
+const stored = JSON.parse(localStorage.getItem(key)|| "[]")
     if (editIndex !== null) {
       // if editing → replace existing task
       stored[editIndex] = newTask;
@@ -92,7 +104,7 @@ const stored = JSON.parse(localStorage.getItem(key)) || [];
 
         <div className="space-y-3">
           <label className="flex items-center gap-2 text-[11px] font-black text-[#475569] uppercase tracking-widest ml-1"><AlignLeft size={14} className="text-[#6D28D9]" /> Description</label>
-          <textarea rows="4" name="description" placeholder="Briefly describe the task objectives..." value={formik.values.description} onChange={formik.handleChange} onBlur={formik.handleBlur} className="w-full bg-[#FAF9FF] border border-purple-50 rounded-2xl py-3.5 md:py-4.5 px-6 text-[#1E1B4B] font-bold outline-none focus:border-[#6D28D9] transition-all resize-none" />
+          <textarea rows={4} name="description" placeholder="Briefly describe the task objectives..." value={formik.values.description} onChange={formik.handleChange} onBlur={formik.handleBlur} className="w-full bg-[#FAF9FF] border border-purple-50 rounded-2xl py-3.5 md:py-4.5 px-6 text-[#1E1B4B] font-bold outline-none focus:border-[#6D28D9] transition-all resize-none" />
           {formik.touched.description && formik.errors.description && <p className="text-red-500 text-xs font-bold">{formik.errors.description}</p>}
         </div>
 

@@ -1,10 +1,15 @@
 import { useState } from "react";
 
-const AITask = () => {
-  const [prompt, setPrompt] = useState("");
-  const [tasks, setTasks] = useState([]);
+type Task ={
+  title : string;
+  Status : "Pending" | "Completed" | "All"
+}
 
- const generateTasks = async () => {  //starts async fn   
+const AITask = () => {
+  const [prompt, setPrompt] = useState<string>("");
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+ const generateTasks = async (): Promise<void> => {  //starts async fn   
 
  if (prompt.length === 0) return; //if input empty then stop
   try {
@@ -23,7 +28,7 @@ const AITask = () => {
       return;
     }
 
-    const data = await res.json();
+    const data : Task[] = await res.json();
     console.log("AI RESPONSE:", data); 
 
     setTasks(data);  //save in state
@@ -32,11 +37,13 @@ const AITask = () => {
   }
 };
 
-  const saveTasks = () => {
-    const user = JSON.parse(localStorage.getItem("user"));
+  const saveTasks = () : void => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!user.email) return;
+
   const key = `tasks_${user.email}`;
 
-  const existing = JSON.parse(localStorage.getItem(key)) || [];
+  const existing = JSON.parse(localStorage.getItem(key) || "[]");
 
      const formattedTasks = tasks.map((t) => ({
     TaskName: t.title,
@@ -49,7 +56,7 @@ const AITask = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-[fadeInUp_0.6s_ease-out] ">
 
       <div className="flex flex-col sm:flex-row gap-3">
         <input
@@ -97,6 +104,13 @@ const AITask = () => {
           Save Tasks
         </button>
       )}
+
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 };

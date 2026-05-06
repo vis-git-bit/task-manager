@@ -1,43 +1,56 @@
 import { useState, useEffect } from 'react';
 import { User, Mail, Shield, BadgeCheck, MapPin, AlertTriangle, Lock, Eye, EyeOff, ListTodo } from 'lucide-react';
 
-const Profile = () => {
-  // --- STATE MANAGEMENT ---
-  const [user, setUser] = useState(null);
-  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState(true); 
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [password, setPassword] = useState("••••••••"); 
-  const [showPassword, setShowPassword] = useState(false);
+type User = {
+  name?: string;
+  email?: string;
+  password?: string;
+  role?: string;
+};
 
-  // Logic: Task Manager state (Progress calculation)
-  const tasks = [
+type Task = {
+  id: number;
+  title: string;
+  status: string;
+  color: string;
+};
+
+const Profile = () => {
+
+  const [user, setUser] = useState<User | null>(null);
+  const [isTwoFactorEnabled, setIsTwoFactorEnabled] = useState<boolean>(true); 
+  const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
+  const [password, setPassword] = useState<string>("••••••••"); 
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+
+ 
+  const tasks : Task[] = [
     { id: 1, title: "System Security Audit", status: "Completed", color: "text-green-500" },
     { id: 2, title: "Database Migration", status: "In Progress", color: "text-blue-500" },
     { id: 3, title: "Update Profile API", status: "Pending", color: "text-amber-500" }
   ];
-  const progressPercent = 65; // Logic: Mock progress value
+  const progressPercent = 65; 
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
+      const parsedUser : User = JSON.parse(storedUser);
       setUser(parsedUser);
       if (parsedUser.password) setPassword(parsedUser.password);
     }
   }, []);
 
-  // --- LOGIC: TOGGLE ACTIONS ---
-  const handleToggleClick = () => setShowConfirmModal(true);
-  const confirmToggle = () => {
+  const handleToggleClick = () : void => setShowConfirmModal(true);
+  const confirmToggle = () : void => {
     setIsTwoFactorEnabled(!isTwoFactorEnabled);
     setShowConfirmModal(false);
   };
 
   return (
-    // Added responsive padding (p-4 on mobile, p-8 on larger screens)
+   
     <div className="w-full max-w-7xl mx-auto p-4 md:p-8 animate-[fadeInUp_0.6s_ease-out] relative pb-10">
       
-      {/* --- CONFIRMATION MODAL --- */}
+      {/* CONFIRMATION MODAL */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div className="bg-white rounded-4xl p-6 md:p-8 max-w-sm w-full shadow-2xl border border-purple-50">
@@ -80,10 +93,10 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Responsive Multi-Detail Grid */}
+     
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
         
-        {/* 1. Task Manager Section */}
+        {/* Task Manager Section */}
         <div className="bg-white p-6 md:p-8 rounded-4xl border border-purple-50 shadow-sm space-y-6">
           <h3 className="text-sm font-black text-[#1E1B4B] uppercase tracking-widest flex items-center gap-3">
             <div className="w-2 h-6 bg-[#6D28D9] rounded-full"></div>
@@ -115,7 +128,7 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* 2. Credentials Section */}
+        {/* Credentials Section */}
         <div className="bg-white p-6 md:p-8 rounded-4xl border border-purple-50 shadow-sm space-y-6">
           <h3 className="text-sm font-black text-[#1E1B4B] uppercase tracking-widest flex items-center gap-3">
             <div className="w-2 h-6 bg-[#6D28D9] rounded-full"></div>
@@ -144,8 +157,7 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* 3. Security Status Section */}
-        {/* 'md:col-span-2 lg:col-span-1' makes this card wide on tablet but normal on desktop */}
+        {/*  Security Status Section */}
         <div className="bg-white p-6 md:p-8 rounded-4xl border border-purple-50 shadow-sm space-y-6 md:col-span-2 lg:col-span-1">
           <h3 className="text-sm font-black text-[#1E1B4B] uppercase tracking-widest flex items-center gap-3">
             <div className="w-2 h-6 bg-[#6D28D9] rounded-full"></div>

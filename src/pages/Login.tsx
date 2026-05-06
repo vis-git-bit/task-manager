@@ -1,13 +1,25 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { Chrome, Facebook, Github, ArrowRight, CheckCircle2, Zap, ShieldCheck } from 'lucide-react';
-import { useFormik } from "formik";   // ADDED
-import * as Yup from "yup";           // ADDED
+import { useFormik } from "formik";   
+import * as Yup from "yup";        
+
+type LoginForm = {
+  email: string;
+  password: string;
+};
+
+type User = {
+  email: string;
+  password: string;
+  name?: string;
+  id?: string;
+};
 
 const Login = () => {
     const navigate = useNavigate();
 
     // Formik setup (ADDED)
-    const formik = useFormik({
+    const formik = useFormik<LoginForm>({
         initialValues: {
             email: "",
             password: ""
@@ -20,13 +32,13 @@ const Login = () => {
                 .min(4, "Min 4 characters")
                 .required("Password is required")
         }),
-        onSubmit: async (values) => {
+       onSubmit: async (values: LoginForm): Promise<void> => {
             try {
                 const response = await fetch('https://69ef23b6112e1b968e240e58.mockapi.io/users'); // fetch all users data from API
                 const data = await response.json(); // convert response into JSON format
 
                 const users = data.find(  // find user whose email & password match input
-                    (u) => u.email === values.email && u.password === values.password  // check if entered email & password match any user
+                    (u : User) => u.email === values.email && u.password === values.password  // check if entered email & password match any user
                 );
 
                 if (users) {  //if matches

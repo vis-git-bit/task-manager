@@ -1,25 +1,37 @@
 import { useState, useEffect } from "react";
 
-const Table = ({ tasks, onEdit }) => {    // receive tasks via props 
-  const [taskData, setTaskData] = useState([]);   // store all tasks
-  const [showModal, setShowModal] = useState(false);  //state for showing model or not
-  const [deleteIndex, setDeleteIndex] = useState(null);  //state for clicked index for delete 
+type Task = {
+  TaskName: string;
+  Description: string;
+  Status: "Completed" | "Pending" | "All" | string;
+  DueDate: string;
+};
+
+type Props = {
+  tasks?: Task[];
+  onEdit: (index: number) => void;
+  onDelete: (index: number) => void; // Added: prop to handle delete in parent
+};
+
+const Table = ({ tasks, onEdit, onDelete } : Props) => {    // receive tasks via props 
+  const [taskData, setTaskData] = useState<Task[]>([]);   // store all tasks
+  const [showModal, setShowModal] = useState<boolean>(false);  //state for showing model or not
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);  //state for clicked index for delete 
 
   useEffect(() => {
     // We prioritize the tasks prop if provided, otherwise fetch
     if(tasks) {
         setTaskData(tasks);
     } else {
-        const storedTask = JSON.parse(localStorage.getItem("mytask")) || [];   //get task data 
+        const storedTask = JSON.parse(localStorage.getItem("mytask") || "[]");   //get task data 
         setTaskData(storedTask);  //update the state
     }
   }, [tasks]);
 
-  const confirmDelete = () => {
-    const updated = taskData.filter((_, i) => i !== deleteIndex);  //check clicked index and current item index is same or not
-    setTaskData(updated);   //update state
-    localStorage.setItem("mytask", JSON.stringify(updated));  //save updated taskdata in storage 
-
+  const confirmDelete = () : void => {
+    if (deleteIndex !== null) {
+      onDelete(deleteIndex); // Call the parent function to handle storage logic 
+    }
     setShowModal(false);  //update state for not to show model 
     setDeleteIndex(null);  //update state after removing that index start 
   };
@@ -39,7 +51,7 @@ const Table = ({ tasks, onEdit }) => {    // receive tasks via props
           </thead>
           <tbody className="divide-y divide-gray-50">
             {taskData.length === 0 ? (
-              <tr><td colSpan="5" className="text-center py-10 text-gray-400 font-medium">No tasks.</td></tr>
+              <tr><td colSpan={5} className="text-center py-10 text-gray-400 font-medium">No tasks.</td></tr>
             ) : (
               taskData.map((task, index) => (
                 <tr key={index} className="group hover:bg-[#FAF9FF] transition-colors">
@@ -50,7 +62,7 @@ const Table = ({ tasks, onEdit }) => {    // receive tasks via props
                       task.Status === "Completed" ? "bg-green-50 text-green-600" : 
                       task.Status === "Pending" ? "bg-orange-50 text-orange-500" : "bg-purple-50 text-purple-600"
                     }`}>{task.Status}</span>
-                  </td>
+                  </td> 
                   <td className="py-5 px-2 text-sm text-[#94A3B8] font-medium">{task.DueDate}</td>
                   <td className="py-5 px-2 text-right">
                     <div className="flex gap-2 justify-end">
@@ -67,11 +79,11 @@ const Table = ({ tasks, onEdit }) => {    // receive tasks via props
 
       {showModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center">
+          <div className="bg-white p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center animate-[fadeInUp_0.3s_ease-out]">
             <h2 className="text-lg font-bold mb-6">Are you sure you want to delete?</h2>
             <div className="flex justify-center gap-4">
-              <button onClick={confirmDelete} className="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold">Delete</button>
-              <button onClick={() => setShowModal(false)} className="flex-1 bg-gray-100 text-gray-500 py-3 rounded-xl font-bold">Cancel</button>
+              <button onClick={confirmDelete} className="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold cursor-pointer">Delete</button>
+              <button onClick={() => setShowModal(false)} className="flex-1 bg-gray-100 text-gray-500 py-3 rounded-xl font-bold cursor-pointer">Cancel</button>
             </div>
           </div>
         </div>

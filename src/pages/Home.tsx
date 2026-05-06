@@ -6,11 +6,19 @@ import AddTask from "../components/Task";
 import Profile from "../components/Profile";
 import AITask from "../components/AITasks";
 
+type Task = {
+  TaskName: string;
+  Description: string;
+  Status: "Completed" | "Pending" | "All" | string;
+  DueDate: string;
+};
+
 const Home = () => {
-  const [view, setView] = useState("dashboard"); // controls which page is shown (dashboard / addTask / profile)
-  const [editIndex, setEditIndex] = useState(null); // stores index of task being edited
-  const [tasks , setTasks] = useState([]);// stores all tasks from localStorage
-  const [filter , setFilter] = useState("All"); // stores current filter (All / Completed / Pending)
+  const [view, setView] = useState<string>("dashboard"); // controls which page is shown (dashboard / addTask / profile)
+  const [editIndex, setEditIndex] = useState<number | null>(null); // stores index of task being edited
+  const [tasks , setTasks] = useState<Task[]>([]);// stores all tasks from localStorage
+  const [filter , setFilter] = useState<"All" | "Completed" | "Pending">("All"); // stores current filter (All / Completed / Pending)
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const filteredTasks = tasks.filter((task) => {
     if (filter === "All") return true;  //If filter is "All" show all task
@@ -20,12 +28,25 @@ const Home = () => {
   useEffect(() => {
 
  // get logged-in user
-const user = JSON.parse(localStorage.getItem("user"));
+const user = JSON.parse(localStorage.getItem("user") || "{}");
 const taskKey = user ? `tasks_${user.email}` : "tasks_guest";
 
-const stored = JSON.parse(localStorage.getItem(taskKey)) || [];
+const stored = JSON.parse(localStorage.getItem(taskKey)|| "[]");
   setTasks(stored);
+
+  // Set loading to false after data is fetched
+    setTimeout(() => setIsLoading(false), 500); 
 }, [view]); // run whenever view changes (refresh data after adding/editing)
+
+// New function to handle deletion using the correct localStorage key
+const deleteTask = (index: number) => {
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const taskKey = user ? `tasks_${user.email}` : "tasks_guest";
+  
+  const updatedTasks = tasks.filter((_, i) => i !== index);
+  setTasks(updatedTasks);
+  localStorage.setItem(taskKey, JSON.stringify(updatedTasks));
+};
 
 const allTasks = tasks.length;   // total number of tasks
 
@@ -37,20 +58,29 @@ const pendingTasks = tasks.filter(
   (t) => t.Status === "Pending"  // count tasks with status "pending"
 ).length;  
 
+// 3. Render the spinner if loading
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-[#FAF9FF]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#6D28D9]"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[#FAF9FF]">
-      {/* Sidebar - Responsive: Sidebar on Desktop, Top/Bottom bar on Mobile */}
+      {/* Sidebar  */}
       <Sidebar 
       view={view}
        // change view when menu item is clicked
-       onMenuClick={(action) => setView(action)} />    
+       onMenuClick={(action : string) => setView(action)} />    
 
       {/* Main Content Wrapper */}
       <div className="grow flex flex-col h-screen overflow-hidden">
         {/* Topbar */}
         <Topbar />
 
-        {/* Content Area - Scrollable */}
+        {/* Content Area  */}
         <main className="p-4 md:p-8 overflow-y-auto bg-transparent">
           <div className="w-full">
             
@@ -59,7 +89,7 @@ const pendingTasks = tasks.filter(
               <div>
                 <h1 className="text-2xl md:text-3xl font-black text-[#1E1B4B]">
                   {view === "dashboard" && ( "Dashboard Overview" )}
-                  {view === "addTask" && ("Manage Tasks")}
+                  {view === "addTask" && (editIndex !== null ? "Edit Task" : "Manage Tasks")}
                   {view === "profile" && ("My profile" )}
                   {view === "GenerateTask" && ("AI Task Generator")}
                 </h1>
@@ -69,7 +99,7 @@ const pendingTasks = tasks.filter(
 
             {view === "profile" && <Profile />}
 
-            {/* Task Stats - Responsive Grid: 1 col on mobile, 3 on desktop */}
+            {/* Task Status */}
             {view === "dashboard" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
                 <div className="p-6 rounded-3xl md:rounded-4xl bg-[#9e66f750] border border-purple-50 shadow-sm flex flex-col justify-center items-center group hover:border-purple-200 transition-all animate-[fadeInUp_0.4s_ease-out]">
@@ -94,7 +124,7 @@ const pendingTasks = tasks.filter(
                 <>
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-2 animate-[fadeIn_0.5s_ease-out]">
                     <h2 className="font-bold text-xl text-[#1E1B4B]">My Tasks</h2>
-                   <div className="flex gap-1 md:gap-3 bg-white p-1 rounded-2xl border border-purple-50 shadow-sm overflow-x-auto w-full sm:w-auto">
+                    <div className="flex gap-1 md:gap-3 bg-white p-1 rounded-2xl border border-purple-50 shadow-sm overflow-x-auto w-full sm:w-auto">
   
                  <button
                    onClick={() => setFilter("All")}
@@ -102,7 +132,7 @@ const pendingTasks = tasks.filter(
                   filter === "All"
                       ? "bg-[#6D28D9] text-white"
                       : "text-[#94A3B8] hover:text-[#6D28D9]"
-                   }`}
+                    }`}
                    >
                   All
                </button>
@@ -113,7 +143,7 @@ const pendingTasks = tasks.filter(
                  filter === "Completed"
                     ? "bg-[#6D28D9] text-white"
                     : "text-[#94A3B8] hover:text-[#6D28D9]"
-                   }`}
+                    }`}
                    >
                  Completed
                   </button>
@@ -124,19 +154,21 @@ const pendingTasks = tasks.filter(
                    filter === "Pending"
                     ? "bg-[#6D28D9] text-white"
                     : "text-[#94A3B8] hover:text-[#6D28D9]"
-                    }`}
-                    >
-                 Pending                  
+                     }`}
+                     >
+                  Pending                  
                   </button>
 
                </div>
                   </div>
                   <Table  
                       tasks={filteredTasks}  // pass filtered tasks to table
-                      onEdit={(index) => {  //save which task to edit and open form
+                      onEdit={(index : number) => {  //save which task to edit and open form
                       setEditIndex(index);
                       setView("addTask");
-                   }}/>
+                   }}
+                   onDelete={deleteTask} // Added: function to handle delete logic
+                   />
                 </>
               )}  
               {/* sending prop(onTaskAdded) */}
