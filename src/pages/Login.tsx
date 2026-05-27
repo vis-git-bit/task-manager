@@ -159,7 +159,7 @@ const Login = () => {
                             >
                                 Log In 
                                 <ArrowRight size={18} />
-                            </button>
+                            </button> 
                         </form>
 
                         <div className="mt-10 mb-8 flex items-center">
